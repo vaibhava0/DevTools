@@ -6,10 +6,13 @@ from collections import defaultdict
 from pprint import pprint
 
 
+# Handles sweep style jobs.
+# E.g. 63082472_[1,5,6,7] or 63082472_[1,6-10]
 def getJobArraySize(job_id):
     job_array = job_id.split("[")[1].split("]")[0]
 
     # Handles the case where max jobs are specified.
+    # E.g. 63082472_[163-211%4]
     if "%" in job_array:
         return int(job_array.split("%")[1])
 
@@ -22,7 +25,6 @@ def getJobArraySize(job_id):
             result += 1
     return result
 
-# Note: supports simple job arrays.
 def getGpuRequest(job_id, num_nodes):
     num_gpus = int(num_nodes) * 8
     if "_[" in job_id:
