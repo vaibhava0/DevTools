@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 
-import argparse
 import subprocess
 from collections import defaultdict
-from pprint import pprint
+from dataclasses import dataclass
+
+_USERS = {"#winvision": {"berniehuang", "chayryali", "cywu", "feichtenhofer", "haithamkhedr", "haoqifan", "huxu",
+                         "lyttonhao", "mannatsingh", "pdollar", "rbg", "shoubhikdn", "tetexiao",
+                         "vaibhava", "xinleic"},
+          "#omniscale": {"haoqifan", "kalyanv", "mannatsingh", "qduval", "vaibhava"}}
+
+# Special case to catch jobs without a tag.
+_UNCATEGORIZED_TAG = "#uncategorized"
 
 
 def getJobArraySize(job_id):
@@ -22,6 +29,7 @@ def getJobArraySize(job_id):
             result += 1
     return result
 
+
 # Note: supports simple job arrays.
 def getGpuRequest(job_id, num_nodes):
     num_gpus = int(num_nodes) * 8
@@ -30,36 +38,86 @@ def getGpuRequest(job_id, num_nodes):
     return num_gpus
 
 
-def querySlurm(job_tag):
+@dataclass
+class JobInfoEntry:
+    username: str
+    jobid: str
+    num_nodes: int
+    jobname: str
+
+
+class SlurmUsagePerTag:
+    def __init__(self, tag: str):
+        self.tag = tag
+        self.request_per_user = defaultdict(int)
+        self.total_request = 0
+
+    def parseUsage(self, jobinfo: JobInfoEntry):
+        request = getGpuRequest(jobinfo.jobid, jobinfo.num_nodes)
+        self.request_per_user[jobinfo.username] += request
+        self.total_request += request
+
+
+def querySlurm():
+    # Query username, jobid, num nodes, job name.
     slurm_command = 'squeue -a -o "%u,%i,%D,%j" -S u,i'
     process = subprocess.run(slurm_command, shell=True, check=True, capture_output=True, text=True)
     jobs = process.stdout.split("\n")
-    # Remove the last empty entry.
-    jobs.pop()
-    job_info = [job.split(",", 4) for job in jobs]
-    request_per_user = defaultdict(int)
-    total_request = 0
-    job_tag = job_tag.lower()
-    for info in job_info:
-        if job_tag in info[3].lower():
-            request = getGpuRequest(info[1], info[2])
-            # print(f"Request {request} for record {info}")
-            request_per_user[info[0]] += request
-            total_request += request
-    print(f"\nTotal GPU request is: {total_request}")
 
-    print(f"\nGPU request per user is:")
-    for user_id, request in sorted(request_per_user.items()):
-        print(f"{user_id}\t{request}")
+    # Remove the first column entry and last empty entry.
+    jobs.pop(0)
+    jobs.pop()
+    job_info = []
+    for job in jobs:
+        info = job.split(",", 3)
+        job_info.append(JobInfoEntry(info[0], info[1], int(info[2]), info[3]))
+    return job_info
+
+
+def getJobTag(jobname: str):
+    for tag in _USERS.keys():
+        if tag.lower() in jobname.lower():
+            return tag
+    return _UNCATEGORIZED_TAG
+
+
+def computeUsage(job_info: list[JobInfoEntry]) -> dict[str, SlurmUsagePerTag]:
+    usage_per_tag = {}
+    all_users = set()
+    for tag, users in _USERS.items():
+        usage_per_tag[tag.lower()] = SlurmUsagePerTag(tag)
+        all_users.update(users)
+    usage_per_tag[_UNCATEGORIZED_TAG] = SlurmUsagePerTag(_UNCATEGORIZED_TAG)
+
+    for info in job_info:
+        if info.username in all_users:
+            tag = getJobTag(info.jobname)
+            usage_per_tag[tag].parseUsage(info)
+
+    return usage_per_tag
+
+
+
+class Color:
+   RED = '\033[91m'
+   BOLD = '\033[1m'
+   END = '\033[0m'
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--job_tag', type=str, default="#winvision",
-                        help='tag used to filter job names')
-
-    args = parser.parse_args()
-    querySlurm(args.job_tag)
+    job_info = querySlurm()
+    usage_per_tag = computeUsage(job_info)
+    if usage_per_tag[_UNCATEGORIZED_TAG].total_request > 0:
+        print(f"\n{Color.RED}{Color.BOLD}WARNING The following GPU usage is uncategorized:{Color.END}")
+        for user_id, request in sorted(usage_per_tag[_UNCATEGORIZED_TAG].request_per_user.items()):
+            print(f"{user_id}\t{request}")
+    for tag in _USERS.keys():
+        slurm_usage = usage_per_tag[tag]
+        print(f"\n{Color.BOLD}Usage for tag {tag}:{Color.END}")
+        print(f"Total GPU request is: {slurm_usage.total_request}")
+        print(f"GPU request per user is:")
+        for user_id, request in sorted(slurm_usage.request_per_user.items()):
+            print(f"{user_id}\t{request}")
 
 
 if __name__ == "__main__":
