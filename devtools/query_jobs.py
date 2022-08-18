@@ -13,10 +13,13 @@ _USERS = {"#winvision": {"berniehuang", "chayryali", "cywu", "feichtenhofer", "h
 _UNCATEGORIZED_TAG = "#uncategorized"
 
 
+# Handles sweep style jobs.
+# E.g. 63082472_[1,5,6,7] or 63082472_[1,6-10]
 def getJobArraySize(job_id):
     job_array = job_id.split("[")[1].split("]")[0]
 
     # Handles the case where max jobs are specified.
+    # E.g. 63082472_[163-211%4]
     if "%" in job_array:
         return int(job_array.split("%")[1])
 
