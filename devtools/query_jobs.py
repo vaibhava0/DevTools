@@ -110,9 +110,12 @@ class Color:
 def main():
     job_info = querySlurm()
     usage_per_tag = computeUsage(job_info)
+    print(f"\n{Color.BOLD}Please make sure to add the project tag in SLURM job name.{Color.END}")
     if usage_per_tag[_UNCATEGORIZED_TAG].total_request > 0:
+        slurm_usage = usage_per_tag[_UNCATEGORIZED_TAG]
         print(f"\n{Color.RED}{Color.BOLD}WARNING The following GPU usage is uncategorized:{Color.END}")
-        for user_id, request in sorted(usage_per_tag[_UNCATEGORIZED_TAG].request_per_user.items()):
+        print(f"Total GPU request is: {slurm_usage.total_request}")
+        for user_id, request in sorted(slurm_usage.request_per_user.items()):
             print(f"{user_id}\t{request}")
     for tag in _USERS.keys():
         slurm_usage = usage_per_tag[tag]
