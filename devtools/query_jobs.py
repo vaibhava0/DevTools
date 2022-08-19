@@ -84,7 +84,7 @@ def getJobTag(jobname: str):
     return _UNCATEGORIZED_TAG
 
 
-def computeUsage(job_info: list[JobInfoEntry]) -> dict[str, SlurmUsagePerTag]:
+def computeUsage(job_info):
     usage_per_tag = {}
     all_users = set()
     for tag, users in _USERS.items():
