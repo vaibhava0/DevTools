@@ -7,7 +7,8 @@ from dataclasses import dataclass
 _USERS = {"#winvision": {"berniehuang", "chayryali", "cywu", "feichtenhofer", "haithamkhedr", "haoqifan", "huxu",
                          "lyttonhao", "mannatsingh", "pdollar", "rbg", "shoubhikdn", "tetexiao",
                          "vaibhava", "xinleic"},
-          "#omniscale": {"haoqifan", "kalyanv", "mannatsingh", "qduval", "vaibhava"}}
+          "#omniscale": {"haoqifan", "kalyanv", "mannatsingh", "qduval", "vaibhava"},
+          "#scale_vision": {"vaibhava", "fduwjj", "mingzhe0908"}}
 
 # Special case to catch jobs without a tag.
 _UNCATEGORIZED_TAG = "#uncategorized"
