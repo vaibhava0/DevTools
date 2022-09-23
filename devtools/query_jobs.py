@@ -4,11 +4,13 @@ import subprocess
 from collections import defaultdict
 from dataclasses import dataclass
 
-_USERS = {"#winvision": {"berniehuang", "chayryali", "cywu", "feichtenhofer", "haithamkhedr", "haoqifan", "huxu",
+_USERS = {"winvision": {"berniehuang", "chayryali", "cywu", "feichtenhofer", "haithamkhedr", "haoqifan", "huxu",
                          "lyttonhao", "mannatsingh", "pdollar", "rbg", "shoubhikdn", "tetexiao",
-                         "vaibhava", "xinleic"},
-          "#omniscale": {"haoqifan", "kalyanv", "mannatsingh", "qduval", "vaibhava"},
-          "#scale_vision": {"vaibhava", "fduwjj", "mingzhe0908"}}
+                         "vaibhava", "xinleic", "fduwjj", "mingzhe0908"},
+          "omniscale": {"haoqifan", "kalyanv", "mannatsingh", "qduval", "vaibhava"}}
+
+_LIMITS = {"winvision": 1024,
+           "omniscale": 1024}
 
 # Special case to catch jobs without a tag.
 _UNCATEGORIZED_TAG = "#uncategorized"
@@ -115,16 +117,17 @@ def main():
     if usage_per_tag[_UNCATEGORIZED_TAG].total_request > 0:
         slurm_usage = usage_per_tag[_UNCATEGORIZED_TAG]
         print(f"\n{Color.RED}{Color.BOLD}WARNING The following GPU usage is uncategorized:{Color.END}")
-        print(f"Total GPU request is: {slurm_usage.total_request}")
         for user_id, request in sorted(slurm_usage.request_per_user.items()):
-            print(f"{user_id}\t{request}")
+            print(f"\t{user_id}\t{request}")
     for tag in _USERS.keys():
         slurm_usage = usage_per_tag[tag]
+        remaining = _LIMITS[tag] - slurm_usage.total_request
         print(f"\n{Color.BOLD}Usage for tag {tag}:{Color.END}")
-        print(f"Total GPU request is: {slurm_usage.total_request}")
-        print(f"GPU request per user is:")
+        print(f"Total GPU request: {slurm_usage.total_request}")
+        print(f"Available GPUs (please also check #uncategorized section): {remaining}")
+        print(f"GPU request per user:")
         for user_id, request in sorted(slurm_usage.request_per_user.items()):
-            print(f"{user_id}\t{request}")
+            print(f"\t{user_id}\t{request}")
 
 
 if __name__ == "__main__":
