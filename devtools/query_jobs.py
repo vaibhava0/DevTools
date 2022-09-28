@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 _USERS = {"winvision": {"berniehuang", "chayryali", "cywu", "feichtenhofer", "haithamkhedr", "haoqifan", "huxu",
                          "lyttonhao", "mannatsingh", "pdollar", "rbg", "shoubhikdn", "tetexiao",
-                         "vaibhava", "xinleic", "fduwjj", "mingzhe0908"},
+                         "vaibhava", "xinleic", "fduwjj", "mingzhe0908", "kumpera"},
           "omniscale": {"haoqifan", "kalyanv", "mannatsingh", "qduval", "vaibhava"}}
 
 _LIMITS = {"winvision": 1024,
