@@ -4,13 +4,13 @@ import subprocess
 from collections import defaultdict
 from dataclasses import dataclass
 
-_USERS = {"winvision": {"berniehuang", "chayryali", "cywu", "feichtenhofer", "haithamkhedr", "haoqifan", "huxu",
-                         "lyttonhao", "mannatsingh", "pdollar", "rbg", "shoubhikdn", "tetexiao",
-                         "vaibhava", "xinleic", "fduwjj", "mingzhe0908", "kumpera"},
+_USERS = {"scale_vision": {"pdollar", "rbg", "shoubhikdn", "vaibhava", "xinleic", "fduwjj", "mingzhe0908", "kumpera"},
+          "mamut": {"berniehuang", "chayryali", "cywu", "feichtenhofer", "haoqifan", "huxu", "lyttonhao"},
           "omniscale": {"haoqifan", "kalyanv", "mannatsingh", "qduval", "vaibhava"}}
 
-_LIMITS = {"winvision": 1024,
-           "omniscale": 1024}
+_LIMITS = {"scale_vision": 512,
+           "mamut": 512,
+           "omniscale": 896}
 
 # Special case to catch jobs without a tag.
 _UNCATEGORIZED_TAG = "#uncategorized"
